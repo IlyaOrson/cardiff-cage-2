@@ -3,7 +3,7 @@ import copy
 from .PPOAgent import PPOAgent
 from .BlueSleepAgent import BlueSleepAgent
 import numpy as np
-import os
+from pathlib import Path
 
 class MainAgent(PPOAgent):
     def __init__(self):
@@ -55,13 +55,15 @@ class MainAgent(PPOAgent):
         return BlueSleepAgent()
 
     def load_bline(self):
-        ckpt = os.path.join(os.getcwd(),"Models","bline","model.pth")
+        # ckpt = os.path.join(os.getcwd(),"Models","bline","model.pth")
+        ckpt = Path(__file__).resolve().parent.parent / "Models" / "bline" / "model.pth"
         return PPOAgent(52, self.action_space, restore=True, ckpt=ckpt,
                        deterministic=True, training=False)
 
 
     def load_meander(self):
-        ckpt = os.path.join(os.getcwd(),"Models","meander","model.pth")
+        # ckpt = os.path.join(os.getcwd(),"Models","meander","model.pth")
+        ckpt = Path(__file__).resolve().parent.parent / "Models" / "meander" / "model.pth"
         return PPOAgent(52, self.action_space, restore=True, ckpt=ckpt,
                        deterministic=True, training=False)
 
