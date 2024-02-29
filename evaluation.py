@@ -10,6 +10,11 @@ from Wrappers.ChallengeWrapper2 import ChallengeWrapper2
 from Agents.MainAgent import MainAgent
 import random
 
+from rich import inspect as rin
+from rich.console import Console
+from pprint import pformat
+from pathlib import Path
+
 MAX_EPS = 1000
 agent_name = 'Blue'
 random.seed(0)
@@ -59,8 +64,56 @@ if __name__ == "__main__":
             cyborg = CybORG(path, 'sim', agents={'Red': red_agent})
             wrapped_cyborg = wrap(cyborg)
 
+            # wrapped_cyborg.env.env.env.env.env === cyborg
+            ec = cyborg.environment_controller
+
+            # ChallengeWrapper2 > OpenAIGymWrapper > EnumActionWrapper > BlueTableWrapper > TrueTableWrapper > CyBORG
+            bt = wrapped_cyborg.env.env.env
+
+            # the state is tracked by a State object
+            # ec.state
+            # the observation is extracted through an Observation object
+            # which is constructed by following the entries per agent in the INFO_DICT
+            # ec.state.get_true_state(ec.INFO_DICT["True"])
+            # ec.state.get_true_state(ec.INFO_DICT["Blue"])
+
+            # extract ip maps (stored in CybORG.environment_controller)
+            # ec.subnet_cidr_map  # subnet to ip networks
+            # ec.hostname_ip_map  # hostname to ip addresses
+
+            # get last action
+            ec.get_last_action("Blue")
+
             observation = wrapped_cyborg.reset()
             # observation = cyborg.reset().observation
+
+            # NOTE  ec.INFO_DICT["True"/"Blue"] is in theory the reference dict used to filter the state object
+            #       and produce an initial observation, although the following observations do not come from here
+            Path("info_dict_true.txt").write_text(pformat(ec.INFO_DICT["True"]))
+            Path("info_dict_blue.txt").write_text(pformat(ec.INFO_DICT["Blue"]))
+
+            # these are invariant nodes attributes
+            hosts_state = [host.get_state() for host in ec.state.hosts.values()]
+
+            Path("obs_prev.txt").write_text(pformat(observation))
+
+            # NOTE this is equivalent to ec.get_last_observation("Blue").data --> ec.observation["Blue"]
+            bt_obs = bt.get_observation("Blue")
+            bt_tab = bt.get_table()
+            Path("bt_obs_prev.txt").write_text(pformat(bt_obs))
+            Path("bt_tab_prev.txt").write_text(pformat(bt_tab))
+
+            ec_st_prev = ec.state
+            ec_st_true_prev = ec.get_true_state(ec.INFO_DICT["True"]).data
+            ec_obs_true_prev = ec._filter_obs(ec.get_true_state(ec.INFO_DICT["True"])).data
+            # NOTE this is not updated because the observations are updated directly in ec.observation["Blue"] in the ec.step(...) method
+            # ec_obs_blue_prev = ec._filter_obs(ec.get_true_state(ec.INFO_DICT["Blue"]), "Blue").data
+
+            console = Console(record=True, width=120)
+            rin(ec_st_prev, console=console)
+            Path("ec_st_prev.txt").write_text(console.export_text())
+            Path("ec_st_true_prev.txt").write_text(pformat(ec_st_true_prev))
+            Path("ec_obs_true_prev.txt").write_text(pformat(ec_obs_true_prev))
 
             action_space = wrapped_cyborg.get_action_space(agent_name)
             # action_space = cyborg.get_action_space(agent_name)
@@ -73,6 +126,46 @@ if __name__ == "__main__":
                 for j in range(num_steps):
                     action = agent.get_action(observation, action_space)
                     observation, rew, done, info = wrapped_cyborg.step(action)
+
+                    Path("obs.txt").write_text(pformat(observation))
+
+                    bt_obs = bt.get_observation("Blue")
+                    bt_tab = bt.get_table()
+                    Path("bt_obs.txt").write_text(pformat(bt_obs))
+                    Path("bt_tab.txt").write_text(pformat(bt_tab))
+
+                    ec_st = ec.state
+                    ec_st_true = ec.get_true_state(ec.INFO_DICT["True"]).data
+                    ec_obs_true = ec._filter_obs(ec.get_true_state(ec.INFO_DICT["True"])).data
+
+                    console = Console(record=True, width=120)
+                    rin(ec_st, console=console)
+                    Path("ec_st.txt").write_text(console.export_text())
+                    Path("ec_st_true.txt").write_text(pformat(ec_st_true))
+                    Path("ec_obs_true.txt").write_text(pformat(ec_obs_true))
+
+                    # difference between steps
+                    # if ec_obs_true != ec_obs_true_prev:
+                    #     diff_obs_true = DeepDiff(ec_obs_true, ec_obs_true_prev)
+                    #     Path("diff_obs_true.txt").write_text(diff_obs_true.pretty())
+
+                    # update previous files
+                    Path("obs_prev.txt").write_text(pformat(observation))
+
+                    Path("bt_obs_prev.txt").write_text(pformat(bt_obs))
+                    Path("bt_tab_prev.txt").write_text(pformat(bt_tab))
+
+                    # update per step trackers
+                    ec_st_prev = ec_st
+                    ec_st_true_prev = ec_st_true
+                    ec_obs_true_prev = ec_obs_true
+
+                    console = Console(record=True, width=120)
+                    rin(ec_st_prev, console=console)
+                    Path("ec_st_prev.txt").write_text(console.export_text())
+                    Path("ec_st_true_prev.txt").write_text(pformat(ec_st_true_prev))
+                    Path("ec_obs_true_prev.txt").write_text(pformat(ec_obs_true_prev))
+
                     # result = cyborg.step(agent_name, action)
                     r.append(rew)
                     # r.append(result.reward)

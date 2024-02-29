@@ -28,7 +28,7 @@ class BlueTableWrapper(BaseWrapper):
 
     def step(self, agent=None, action=None) -> Results:
         result = self.env.step(agent, action)
-        obs = result.observation
+        obs = result.observation  # NOTE The original Blue agent observation. Should be equivalent to self.get_observation("Blue")
         if agent == 'Blue':
             obs = self.observation_change(obs)
         result.observation = obs
@@ -50,7 +50,7 @@ class BlueTableWrapper(BaseWrapper):
         del obs['success']
         # TODO check what info is for baseline
         info = self._process_anomalies(anomaly_obs)
-        if baseline:
+        if baseline:  # NOTE: baseline refers to the first observation by the blue agent
             for host in info:
                 info[host][-2] = 'None'
                 info[host][-1] = 'No'
@@ -203,7 +203,7 @@ class BlueTableWrapper(BaseWrapper):
             'Activity',
             'Compromised'
         ])
-        for hostid in self.info:
+        for hostid in self.info:  # NOTE this was extracted with the anomalies detection method
             table.add_row(self.info[hostid])
 
         table.sortby = 'Hostname'

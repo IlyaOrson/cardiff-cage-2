@@ -12,8 +12,8 @@ import random
 
 PATH = str(inspect.getfile(CybORG))
 PATH = PATH[:-10] + '/Shared/Scenarios/Scenario2.yaml'
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
 def train(env, input_dims, action_space,
           max_episodes, max_timesteps, update_timestep, K_epochs, eps_clip,
@@ -61,13 +61,13 @@ if __name__ == '__main__':
     np.random.seed(0)
 
     # change checkpoint directory
-    folder = 'bline'
+    folder = 'meander'  #'bline'
     ckpt_folder = os.path.join(os.getcwd(), "Models", folder)
     if not os.path.exists(ckpt_folder):
         os.makedirs(ckpt_folder)
 
     CYBORG = CybORG(PATH, 'sim', agents={
-        'Red': B_lineAgent
+        'Red': RedMeanderAgent  #B_lineAgent
     })
     env = ChallengeWrapper2(env=CYBORG, agent_name="Blue")
     input_dims = env.observation_space.shape[0]
