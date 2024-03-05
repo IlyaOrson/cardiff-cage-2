@@ -10,6 +10,8 @@ import inspect
 from Agents.PPOAgent import PPOAgent
 import random
 
+from tqdm import trange
+
 PATH = str(inspect.getfile(CybORG))
 PATH = PATH[:-10] + '/Shared/Scenarios/Scenario2.yaml'
 # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -25,9 +27,9 @@ def train(env, input_dims, action_space,
 
     running_reward, time_step = 0, 0
 
-    for i_episode in range(1, max_episodes + 1):
+    for i_episode in trange(1, max_episodes + 1, desc="episode", leave=False):
         state = env.reset()
-        for t in range(max_timesteps):
+        for t in trange(max_timesteps, desc="timestep", leave=False):
             time_step += 1
             action = agent.get_action(state)
             state, reward, done, _ = env.step(action)
