@@ -126,7 +126,8 @@ if __name__ == "__main__":
                 # cyborg.env.env.tracker.render()
                 for j in trange(num_steps, desc="num_steps", leave=False):
                     action = agent.get_action(observation, action_space)
-                    observation, rew, done, info = wrapped_cyborg.step(action)
+                    observation, rew, terminated, truncated, info = wrapped_cyborg.step(action)
+                    done = terminated or truncated
 
                     # Path("obs.txt").write_text(pformat(observation))
 

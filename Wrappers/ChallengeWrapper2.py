@@ -29,13 +29,13 @@ class ChallengeWrapper2(Env, BaseWrapper):
         self.step_counter = None
 
     def step(self, action=None):
-        obs, reward, done, info = self.env.step(action=action)
+        obs, reward, terminated, truncated, info = self.env.step(action=action)
 
         self.step_counter += 1
         if self.max_steps is not None and self.step_counter >= self.max_steps:
-            done = True
+            truncated = True
 
-        return obs, reward, done, info
+        return obs, reward, terminated, truncated, info
 
     def reset(self):
         self.step_counter = 0

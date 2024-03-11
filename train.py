@@ -32,7 +32,8 @@ def train(env, input_dims, action_space,
         for t in trange(max_timesteps, desc="timestep", leave=False):
             time_step += 1
             action = agent.get_action(state)
-            state, reward, done, _ = env.step(action)
+            state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             agent.store(reward, done)
 
             if time_step % update_timestep == 0:
