@@ -85,7 +85,7 @@ if __name__ == "__main__":
             # get last action
             ec.get_last_action("Blue")
 
-            observation = wrapped_cyborg.reset()
+            observation, info = wrapped_cyborg.reset()
             # observation = cyborg.reset().observation
 
             # NOTE  ec.INFO_DICT["True"/"Blue"] is in theory the reference dict used to filter the state object
@@ -94,7 +94,7 @@ if __name__ == "__main__":
             # Path("info_dict_blue.txt").write_text(pformat(ec.INFO_DICT["Blue"]))
 
             # these are invariant nodes attributes
-            hosts_state = [host.get_state() for host in ec.state.hosts.values()]
+            # hosts_state = [host.get_state() for host in ec.state.hosts.values()]
 
             # Path("obs_prev.txt").write_text(pformat(observation))
 
