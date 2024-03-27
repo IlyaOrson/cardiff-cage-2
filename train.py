@@ -5,7 +5,10 @@ import numpy as np
 import os
 from CybORG import CybORG
 from CybORG.Agents import RedMeanderAgent, B_lineAgent
-from Wrappers.ChallengeWrapper2 import ChallengeWrapper2
+# NOTE the wrappers in the updated CybORG already include
+# the fixed version of BlueTable from this repo
+from CybORG.Agents.Wrappers import ChallengeWrapper
+# from Wrappers.ChallengeWrapper2 import ChallengeWrapper2
 import inspect
 from Agents.PPOAgent import PPOAgent
 import random
@@ -28,7 +31,7 @@ def train(env, input_dims, action_space,
     running_reward, time_step = 0, 0
 
     for i_episode in trange(1, max_episodes + 1, desc="episode", leave=False):
-        state = env.reset()
+        state, info = env.reset()
         for t in trange(max_timesteps, desc="timestep", leave=False):
             time_step += 1
             action = agent.get_action(state)
@@ -72,7 +75,8 @@ if __name__ == '__main__':
     CYBORG = CybORG(PATH, 'sim', agents={
         'Red': RedMeanderAgent  #B_lineAgent
     })
-    env = ChallengeWrapper2(env=CYBORG, agent_name="Blue")
+    # env = ChallengeWrapper2(env=CYBORG, agent_name="Blue")
+    env = ChallengeWrapper(env=CYBORG, agent_name="Blue")
     input_dims = env.observation_space.shape[0]
 
     action_space = [133, 134, 135, 139]  # restore enterprise and opserver
